@@ -1,0 +1,61 @@
+[tool.poetry]
+name = "barberapp"
+version = "0.1.0"
+description = "Sistema de Gerenciamento de Barbearia"
+authors = ["Felippe <4drade@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+pyside6 = "=6.7.2"
+pydantic = {extras = ["email"], version = "^2.9.2"}
+pydantic-extra-types = "=2.9.0"
+phonenumbers = "^8.13.45"
+
+[tool.poetry.group.dev.dependencies]
+ruff-lsp = "*"
+ruff = "*"
+mypy = "*"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+strict = true
+show_error_codes = true
+warn_unused_configs = true
+# disable_error_code = ["misc"]
+
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "D200",
+    "D205",
+    "D212",
+    "D400",
+    "D401",
+    "D415",
+    "E402",   # false positives for local imports
+    "E501",   # line too long
+    "TRY003", # external messages in exceptions are too verbose
+    "TD002",
+    "TD003",
+    "FIX002", # too verbose descriptions of todos
+    "SLF001",
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
