@@ -1,26 +1,37 @@
-# Sistema de Gerenciamento de Barbearia
+# OitoNove17
 
-## Funcionalidades Principais
+## Descrição
 
-1. Agendamento de Serviços:
-    * Permitir que clientes ou funcionários agendem horários.
-    * Visualizar horários disponíveis e ocupados.
-2. Cadastro de Clientes:
-    * Adicionar, editar e remover informações dos clientes.
-    * Histórico de serviços prestados a cada cliente.
-3. Gerenciamento de Serviços:
-    * Listar serviços oferecidos (corte, barba, etc.).
-    * Definir preços e duração de cada serviço.
-4. Gerenciamento de Funcionários:
-    * Cadastro de barbeiros e funcionários.
-    * Atribuir serviços e horários a cada barbeiro.
-5. Relatórios e Estatísticas:
-    * Gerar relatórios de faturamento.
-    * Visualizar serviços mais populares.
+Este projeto é um Trabalho de Extensão desenvolvido em Python.
 
-## Tecnologias Utilizadas
+## Estrutura do Projeto
 
-* **Python**: Linguagem de programação principal.
-* **Kivy**: Framework para desenvolver a interface gráfica e compatibilidade com Android.
-* **SQLite**: Banco de dados local para armazenamento das informações.
-* **Buildozer**: Ferramenta para compilar o aplicativo Python em um APK para Android.
+- `main.py`: Arquivo principal que executa a aplicação.
+- `src/`: Contém o código-fonte.
+- `classes/`: Contém as definições de classes.
+- `img/`: Contém imagens utilizadas no projeto.
+- `pyproject.toml`: Arquivo de configuração do Poetry.
+- `poetry.lock`: Lockfile do Poetry.
+
+## Instalação
+
+1. Clone o repositório:
+
+   ```bash
+   git clone https://github.com/bysedd/OitoNove17.git
+   cd OitoNove17
+   ```
+
+2. Instale as dependências:
+
+   ```bash
+   poetry install
+   ```
+
+## Uso
+
+Execute o projeto com o seguinte comando:
+
+```bash
+python main.py
+```

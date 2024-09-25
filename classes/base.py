@@ -81,22 +81,16 @@ class TelaBase(QWidget):
         self.btn_remover.clicked.connect(self.remover)
 
     def carregar(self) -> None:
-        raise NotImplementedError
+        pass
 
     def adicionar(self) -> None:
-        raise NotImplementedError
+        pass
 
     def editar(self) -> None:
-        raise NotImplementedError
+        pass
 
     def remover(self) -> None:
-        raise NotImplementedError
-
-    def _linha_atual(self) -> int:
-        row = self.tabela.currentRow()
-        if row < 0:
-            QMessageBox.warning(self, "Erro", "Selecione uma linha para remover.")
-        return row
+        pass
 
     def _confirmar_remocao(self, msg: str) -> bool:
         reply = QMessageBox.question(
@@ -138,6 +132,16 @@ class TelaBase(QWidget):
             action(nome, segundo_input)
             self.carregar()
 
+    def _validar_linha(self, linha: int) -> bool:
+        if linha < 0:
+            QMessageBox.warning(
+                self,
+                "Erro",
+                "Selecione alguma linha primeiro.",
+            )
+            return False
+        return True
+
     def _editar_item(
         self,
         title: str,
@@ -145,8 +149,11 @@ class TelaBase(QWidget):
         label2: str,
         action: Callable[[str, Any], None],
     ) -> None:
-        dados_linha = self._obter_dados_da_linha(self._linha_atual())
+        linha = self.tabela.currentRow()
+        if not self._validar_linha(linha):
+            return
 
+        dados_linha = self._obter_dados_da_linha(linha)
         nome, ok1 = QInputDialog.getText(self, title, label1, text=dados_linha[0])
         if not ok1 and not nome:
             return
@@ -162,7 +169,7 @@ class TelaBase(QWidget):
             self.carregar()
 
     def _remover_item(self, tipo: str, remover_funcao: Callable[[int], None]) -> None:
-        linha = self._linha_atual()
+        linha = self.tabela.currentRow()
         try:
             nome_item = self.tabela.item(linha, 1).text()
             if self._confirmar_remocao(
@@ -180,6 +187,6 @@ class TelaBase(QWidget):
             self.tabela.setItem(posicao_linha, i, QTableWidgetItem(str(item)))
 
     def _obter_id(self) -> int:
-        linha: int = self._linha_atual()
+        linha = self.tabela.currentRow()
         _id = self.tabela.item(linha, 0).text()
         return int(_id)

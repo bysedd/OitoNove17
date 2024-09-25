@@ -8,9 +8,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
 pyside6 = "=6.7.2"
-pydantic = {extras = ["email"], version = "^2.9.2"}
-pydantic-extra-types = "=2.9.0"
-phonenumbers = "^8.13.45"
+buildozer = "^1.5.0"
+cython = "^3.0.11"
 
 [tool.poetry.group.dev.dependencies]
 ruff-lsp = "*"
@@ -23,7 +22,6 @@ ignore_missing_imports = true
 strict = true
 show_error_codes = true
 warn_unused_configs = true
-# disable_error_code = ["misc"]
 
 
 [tool.ruff]
