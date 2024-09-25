@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import date, time
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -138,7 +138,7 @@ class BancoDeDados:
         cliente_id: int,
         servico_id: int,
         data: date,
-        duracao: time,
+        duracao: int,
     ) -> None:
         self.cur.execute(
             """
@@ -148,6 +148,7 @@ class BancoDeDados:
             """,
             (cliente_id, servico_id, data, duracao, _id),
         )
+        self.conn.commit()
 
     def remover_cliente(self, _id: int) -> None:
         self.cur.execute("DELETE FROM clientes WHERE id = ?", (_id,))
