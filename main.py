@@ -9,9 +9,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from classes.atendimentos import TelaAtendimentos
-from classes.clientes import TelaClientes
-from classes.servicos import TelaServicos
+from src.classes.atendimentos import TelaAtendimentos
+from src.classes.clientes import TelaClientes
+from src.classes.servicos import TelaServicos
 from src.database import BancoDeDados
 
 

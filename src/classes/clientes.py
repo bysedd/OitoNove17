@@ -1,4 +1,4 @@
-from classes.base import TelaBase
+from src.classes.base import TelaBase
 from src.database import BancoDeDados
 
 
