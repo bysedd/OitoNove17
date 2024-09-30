@@ -23,9 +23,11 @@ class MainWindow(QMainWindow):
         self.servicos = TelaServicos(self.banco)
         self.atendimentos = TelaAtendimentos(self.banco)
 
-        self.setFixedSize(400, 200)
         self.setWindowIcon(QIcon("img/barber.ico"))
         self.setWindowTitle("Barbearia Oito Nove 17")
+
+        # Criar um layout vertical para a janela principal
+        layout = QVBoxLayout()
 
         btn_clientes = QPushButton("Clientes")
         btn_clientes.setFixedSize(380, 40)
@@ -89,6 +91,22 @@ if __name__ == "__main__":
         color: black;
         border: 1px solid #dcdcdc;
         padding: 5px;
+    }
+
+    QLineEdit {
+        background-color: white;
+        color: black;
+        border: 1px solid #dcdcdc;
+        padding: 5px;
+        border-radius: 5px;
+    }
+
+    QLineEdit:focus {
+        border: 1px solid #2196F3;
+    }
+
+    QLineEdit::placeholder {
+        color: gray;
     }
     """
     app.setStyleSheet(style)
