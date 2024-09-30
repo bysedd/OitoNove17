@@ -1,43 +1,13 @@
 import sys
 
-from PySide6.QtWidgets import QApplication
-
-app = QApplication(sys.argv)
-
-style = """
-QWidget {
-    background-color: white;
-    color: black;
-}
-
-QPushButton {
-    background-color: #f0f0f0;
-    border: 1px solid #dcdcdc;
-    padding: 5px;
-    border-radius: 5px;
-}
-
-QPushButton:hover {
-    background-color: #e6e6e6;
-}
-
-QTableWidget {
-    background-color: white;
-    gridline-color: #dcdcdc;
-    border: 1px solid #dcdcdc;
-}
-
-QHeaderView::section {
-    background-color: #f0f0f0;
-    color: black;
-    border: 1px solid #dcdcdc;
-    padding: 5px;
-}
-"""
-app.setStyleSheet(style)
-
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from src.classes.atendimentos import TelaAtendimentos
 from src.classes.clientes import TelaClientes
@@ -90,6 +60,38 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    style = """
+    QWidget {
+        background-color: white;
+        color: black;
+    }
+
+    QPushButton {
+        background-color: #f0f0f0;
+        border: 1px solid #dcdcdc;
+        padding: 5px;
+        border-radius: 5px;
+    }
+
+    QPushButton:hover {
+        background-color: #e6e6e6;
+    }
+
+    QTableWidget {
+        background-color: white;
+        gridline-color: #dcdcdc;
+        border: 1px solid #dcdcdc;
+    }
+
+    QHeaderView::section {
+        background-color: #f0f0f0;
+        color: black;
+        border: 1px solid #dcdcdc;
+        padding: 5px;
+    }
+    """
+    app.setStyleSheet(style)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
