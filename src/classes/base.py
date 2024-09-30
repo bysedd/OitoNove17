@@ -34,7 +34,7 @@ class TelaBase(QWidget):
             datefmt="%m/%d/%Y %I:%M:%S",
         )
 
-        self.setFixedSize(600, 400)  # Aumentar o tamanho para mais espaço
+        self.setFixedSize(600, 400)
         self.setWindowIcon(QIcon(icone))
         self.setWindowTitle(titulo)
 
@@ -44,7 +44,6 @@ class TelaBase(QWidget):
         self.tabela.setColumnCount(len(colunas))
         self.tabela.setHorizontalHeaderLabels(colunas)
 
-        # Estilizando o cabeçalho da tabela
         header = self.tabela.horizontalHeader()
         header.setStyleSheet(
             "QHeaderView::section { background-color: #4CAF50; color: white; }",
@@ -57,11 +56,21 @@ class TelaBase(QWidget):
         self.btn_editar = QPushButton("Editar")
         self.btn_remover = QPushButton("Remover")
 
+        # Aplicar estilo aos botões
         for btn in (self.btn_adicionar, self.btn_editar, self.btn_remover):
             btn.setStyleSheet(
-                "QPushButton { background-color: #2196F3; color: white; padding: 10px; border: none; border-radius: "
-                "5px; }"
-                "QPushButton:hover { background-color: #1976D2; }",
+                """
+                QPushButton {
+                    background-color: #f0f0f0;
+                    color: black;
+                    padding: 10px;
+                    border: 1px solid #dcdcdc;
+                    border-radius: 5px;
+                }
+                QPushButton:hover {
+                    background-color: #e6e6e6;
+                }
+                """,
             )
 
         layout_principal = QVBoxLayout()
