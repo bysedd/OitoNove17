@@ -85,9 +85,19 @@ class BancoDeDados:
         self.cur.execute("SELECT * FROM clientes")
         return self.cur.fetchall()
 
+    def obter_cliente_id_por_nome(self, nome: str) -> int | None:
+        self.cur.execute("SELECT id FROM clientes WHERE nome = ?", (nome,))
+        result = self.cur.fetchone()
+        return result[0] if result else None
+
     def obter_servicos(self) -> list[tuple[Any, ...]]:
         self.cur.execute("SELECT * FROM servicos")
         return self.cur.fetchall()
+
+    def obter_servico_id_por_nome(self, nome: str) -> int | None:
+        self.cur.execute("SELECT id FROM servicos WHERE nome = ?", (nome,))
+        result = self.cur.fetchone()
+        return result[0] if result else None
 
     def obter_atendimentos(self) -> list[tuple[Any, ...]]:
         self.cur.execute(
@@ -134,11 +144,11 @@ class BancoDeDados:
 
     def editar_atendimento(
         self,
-        _id: int,
+        atendimento_id: int,
         cliente_id: int,
         servico_id: int,
-        data: date,
-        duracao: int,
+        data: str,
+        duracao: str,
     ) -> None:
         self.cur.execute(
             """
@@ -146,7 +156,7 @@ class BancoDeDados:
             SET cliente_id = ?, servico_id = ?, data = ?, duracao = ?
             WHERE id = ?
             """,
-            (cliente_id, servico_id, data, duracao, _id),
+            (cliente_id, servico_id, data, duracao, atendimento_id),
         )
         self.conn.commit()
 
@@ -163,5 +173,7 @@ class BancoDeDados:
         self.conn.commit()
 
     def __del__(self) -> None:
-        self.conn.close()
-        self.cur.close()
+        if self.conn:
+            self.conn.close()
+        if self.cur:
+            self.cur.close()
