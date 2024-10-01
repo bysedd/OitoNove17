@@ -20,7 +20,7 @@ Builder.load_string("""
     orientation: "vertical"
     spacing: dp(20)
     size_hint_y: None
-    height: self.minimum_height
+    height: self.minimum_height + dp(50)
 
     MDLabel:
         text: "Cliente"
@@ -60,7 +60,7 @@ Builder.load_string("""
     orientation: "vertical"
     spacing: dp(20)
     size_hint_y: None
-    height: self.minimum_height
+    height: self.minimum_height + dp(50)
 
     MDLabel:
         text: "Cliente"
@@ -132,11 +132,30 @@ class TelaAtendimentos(MDScreen):
         self.carregar()
 
     def add_action_buttons(self, layout: BoxLayout) -> None:
-        button_layout = BoxLayout(size_hint=(1, 0.1))
-        btn_voltar = MDFlatButton(text="Voltar", on_release=self.voltar_menu)
-        btn_adicionar = MDFlatButton(text="Adicionar", on_release=self.adicionar)
-        btn_editar = MDFlatButton(text="Editar", on_release=self.editar)
-        btn_remover = MDFlatButton(text="Remover", on_release=self.remover)
+        button_layout = BoxLayout(
+            orientation="horizontal",
+            size_hint=(1, None),
+            height=dp(50),
+            spacing=dp(5),  # Espaçamento opcional entre os botões
+            padding=[dp(10), dp(5), dp(10), dp(5)],  # Padding opcional
+        )
+
+        btn_voltar = MDFlatButton(
+            text="Voltar",
+            on_release=self.voltar_menu,
+            size_hint_x=1,  # Cada botão terá a mesma proporção de largura
+        )
+        btn_adicionar = MDFlatButton(
+            text="Adicionar",
+            on_release=self.adicionar,
+            size_hint_x=1,
+        )
+        btn_editar = MDFlatButton(text="Editar", on_release=self.editar, size_hint_x=1)
+        btn_remover = MDFlatButton(
+            text="Remover",
+            on_release=self.remover,
+            size_hint_x=1,
+        )
 
         button_layout.add_widget(btn_voltar)
         button_layout.add_widget(btn_adicionar)
