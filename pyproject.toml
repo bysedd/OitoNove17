@@ -15,7 +15,6 @@ kivymd = "^1.2.0"
 ruff-lsp = "*"
 ruff = "*"
 mypy = "*"
-pyinstaller = "*"
 
 [tool.mypy]
 python_version = "3.12"
