@@ -7,7 +7,9 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-pyside6 = "=6.7.2"
+kivy = "^2.3.0"
+pytz = "^2024.2"
+kivymd = "^1.2.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff-lsp = "*"
@@ -52,6 +54,9 @@ ignore = [
     "TD003",
     "FIX002", # too verbose descriptions of todos
     "SLF001",
+    "ANN401",
+    "ARG001",
+    "ARG002",
 ]
 
 [build-system]
