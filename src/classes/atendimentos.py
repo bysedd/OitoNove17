@@ -1,284 +1,366 @@
-from datetime import date
-from typing import Any
+from __future__ import annotations
 
-from PySide6.QtCore import QDate
-from PySide6.QtWidgets import (
-    QDateEdit,
-    QDialog,
-    QDialogButtonBox,
-    QInputDialog,
-    QMessageBox,
-    QVBoxLayout,
-    QWidget,
-)
+from typing import TYPE_CHECKING, Any
 
-from src.classes.base import TelaBase
-from src.database import BancoDeDados
+from kivy.lang import Builder
+from kivy.metrics import dp
+from kivy.uix.boxlayout import BoxLayout
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.button import MDFlatButton
+from kivymd.uix.datatables import MDDataTable
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.screen import MDScreen
+
+if TYPE_CHECKING:
+    from src.database import BancoDeDados
+
+Builder.load_string("""
+<ContentAddAtendimento>:
+    orientation: "vertical"
+    spacing: dp(20)
+    size_hint_y: None
+    height: self.minimum_height
+
+    MDLabel:
+        text: "Cliente"
+        size_hint_y: None
+        height: dp(20)
+
+    MDDropDownItem:
+        id: cliente
+        text: "Selecione o Cliente"
+        on_release: root.cliente_dropdown.open()
+
+    MDLabel:
+        text: "Serviço"
+        size_hint_y: None
+        height: dp(20)
+
+    MDDropDownItem:
+        id: servico
+        text: "Selecione o Serviço"
+        on_release: root.servico_dropdown.open()
+
+    MDTextField:
+        id: data
+        hint_text: "Data (dd/mm/yyyy)"
+        required: True
+        size_hint_y: None
+        height: dp(60)
+
+    MDTextField:
+        id: duracao
+        hint_text: "Duração (minutos)"
+        required: True
+        size_hint_y: None
+        height: dp(60)
+        input_filter: "int"
+<ContentEditAtendimento>:
+    orientation: "vertical"
+    spacing: dp(20)
+    size_hint_y: None
+    height: self.minimum_height
+
+    MDLabel:
+        text: "Cliente"
+        size_hint_y: None
+        height: dp(20)
+
+    MDDropDownItem:
+        id: cliente
+        text: "Selecione o Cliente"
+        on_release: root.cliente_dropdown.open()
+
+    MDLabel:
+        text: "Serviço"
+        size_hint_y: None
+        height: dp(20)
+
+    MDDropDownItem:
+        id: servico
+        text: "Selecione o Serviço"
+        on_release: root.servico_dropdown.open()
+
+    MDTextField:
+        id: data
+        hint_text: "Data (dd/mm/yyyy)"
+        required: True
+        size_hint_y: None
+        height: dp(60)
+
+    MDTextField:
+        id: duracao
+        hint_text: "Duração (minutos)"
+        required: True
+        size_hint_y: None
+        height: dp(60)
+        input_filter: "int"
+""")
 
 
-class TelaAtendimentos(TelaBase):
-    def __init__(self, banco: BancoDeDados) -> None:
-        super().__init__(
-            banco,
-            "Atendimentos",
-            "img/atendimento.ico",
-            ["ID", "Cliente", "Serviço", "Data", "Duração"],
+class TelaAtendimentos(MDScreen):
+    def __init__(self, banco: BancoDeDados, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.name = "tela_atendimentos"
+        self.banco = banco
+        self.selected_row = None
+
+        layout = BoxLayout(orientation="vertical")
+
+        self.column_data = [
+            ("ID", dp(30)),
+            ("Cliente", dp(40)),
+            ("Serviço", dp(40)),
+            ("Data", dp(30)),
+            ("Duração", dp(30)),
+        ]
+
+        self.data_tables = MDDataTable(
+            size_hint=(1, 0.9),
+            use_pagination=False,
+            check=False,
+            column_data=self.column_data,
+            row_data=[],
         )
 
+        self.data_tables.bind(on_row_press=self.on_row_press)
+
+        layout.add_widget(self.data_tables)
+        self.add_action_buttons(layout)
+        self.add_widget(layout)
         self.carregar()
+
+    def add_action_buttons(self, layout: BoxLayout) -> None:
+        button_layout = BoxLayout(size_hint=(1, 0.1))
+        btn_voltar = MDFlatButton(text="Voltar", on_release=self.voltar_menu)
+        btn_adicionar = MDFlatButton(text="Adicionar", on_release=self.adicionar)
+        btn_editar = MDFlatButton(text="Editar", on_release=self.editar)
+        btn_remover = MDFlatButton(text="Remover", on_release=self.remover)
+
+        button_layout.add_widget(btn_voltar)
+        button_layout.add_widget(btn_adicionar)
+        button_layout.add_widget(btn_editar)
+        button_layout.add_widget(btn_remover)
+
+        layout.add_widget(button_layout)
+
+    def voltar_menu(self, *_: Any) -> None:
+        self.manager.current = "main_menu"
 
     def carregar(self) -> None:
         atendimentos = self.banco.obter_atendimentos()
-        atendimentos_formatados = [
+        self.data_tables.row_data = [
             (
-                atendimento[0],
+                str(atendimento[0]),
                 atendimento[1],
                 atendimento[2],
-                date.fromisoformat(atendimento[3]).strftime("%d/%m/%Y"),
-                atendimento[4],
+                atendimento[3],
+                str(atendimento[4]),
             )
             for atendimento in atendimentos
         ]
-        self._carregar_dados(atendimentos_formatados)
 
-    def adicionar(self) -> None:
+    def adicionar(self, *_: Any) -> None:
         clientes = self.banco.obter_clientes()
-        cliente_id, cliente_nome = self._selecionar_item(
-            "Selecionar Cliente",
-            "Escolha um cliente:",
-            clientes,
-        )
-        if not cliente_id or not cliente_nome:
-            return
-
         servicos = self.banco.obter_servicos()
-        servico_id, servico_nome = self._selecionar_item(
-            "Selecionar Serviço",
-            "Escolha um serviço:",
-            servicos,
+
+        self.dialog = MDDialog(
+            title="Adicionar Atendimento",
+            type="custom",
+            content_cls=ContentAddAtendimento(clientes, servicos),
+            buttons=[
+                MDFlatButton(text="CANCELAR", on_release=self.fechar_dialog),
+                MDFlatButton(text="SALVAR", on_release=self.salvar_atendimento),
+            ],
+            auto_dismiss=False,
+            size_hint=(0.8, None),
+            height=dp(500),
         )
-        if not servico_id or not servico_nome:
+        self.dialog.open()
+
+    def salvar_atendimento(self, *_: Any) -> None:
+        cliente_nome = self.dialog.content_cls.ids.cliente.text
+        servico_nome = self.dialog.content_cls.ids.servico.text
+        data_atendimento = self.dialog.content_cls.ids.data.text.strip()
+        duracao = self.dialog.content_cls.ids.duracao.text.strip()
+
+        if (
+            all([cliente_nome, servico_nome, data_atendimento, duracao])
+            and cliente_nome != "Selecione o Cliente"
+            and servico_nome != "Selecione o Serviço"
+        ):
+            cliente_id = self.banco.obter_cliente_id_por_nome(cliente_nome)
+            servico_id = self.banco.obter_servico_id_por_nome(servico_nome)
+            if cliente_id and servico_id:
+                self.banco.adicionar_atendimento(
+                    cliente_id,
+                    servico_id,
+                    data_atendimento,
+                    duracao,
+                )
+                self.carregar()
+                self.dialog.dismiss()
+
+    def fechar_dialog(self, *_: Any) -> None:
+        self.dialog.dismiss()
+
+    def editar(self, *_: Any) -> None:
+        if not self.selected_row:
+            # Exibir mensagem indicando que nenhuma linha foi selecionada
             return
 
-        data = self._obter_data()
-        if data is None:
-            return
+        clientes = self.banco.obter_clientes()
+        servicos = self.banco.obter_servicos()
+        row_data = self.selected_row
+        _id = int(row_data[0])
+        data = row_data[3]
+        duracao = row_data[4]
 
-        duracao, ok = QInputDialog.getText(
-            self,
-            "Adicionar Atendimento",
-            "Duração (minutos):",
-        )
-        if not ok or not duracao:
-            return
-
-        resumo = self._resumo(
-            cliente_nome,
-            servico_nome,
-            data.strftime("%d/%m/%Y"),
-            duracao,
-        )
-        reply = QMessageBox.question(
-            self,
-            "Confirmar Atendimento",
-            resumo,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
-        )
-
-        if reply == QMessageBox.StandardButton.Yes:
-            self.banco.adicionar_atendimento(
-                cliente_id,
-                servico_id,
+        self.dialog = MDDialog(
+            title="Editar Serviço",
+            type="custom",
+            content_cls=ContentEditAtendimento(
+                clientes,
+                servicos,
                 data,
                 duracao,
-            )
-            self.carregar()
+            ),
+            buttons=[
+                MDFlatButton(text="CANCELAR", on_release=self.fechar_dialog),
+                MDFlatButton(
+                    text="SALVAR",
+                    on_release=lambda _: self.salvar_edicao_servico(_id),
+                ),
+            ],
+        )
+        self.dialog.open()
 
-    def editar(self) -> None:
-        linha = self.tabela.currentRow()
-        if not self._validar_linha(linha):
+    def remover(self, *_: Any) -> None:
+        if not self.selected_row:
+            # Exibir mensagem indicando que nenhuma linha foi selecionada
             return
 
-        cliente = self.tabela.item(linha, 1).text()
-        servico = self.tabela.item(linha, 2).text()
-        data_str: list[str] = self.tabela.item(linha, 3).text().split("/")
-        data = date(
-            day=int(data_str[0]),
-            month=int(data_str[1]),
-            year=int(data_str[2]),
-        )
-        duracao = int(self.tabela.item(linha, 4).text())
-        self._editar_atendimento(
-            cliente,
-            servico,
-            data,
-            duracao,
-        )
+        row_data = self.selected_row
+        _id = int(row_data[0])
 
-    def _editar_atendimento(
+        self.dialog = MDDialog(
+            text=f"Tem certeza que deseja remover o atendimento ID {_id}?",
+            buttons=[
+                MDFlatButton(text="CANCELAR", on_release=self.fechar_dialog),
+                MDFlatButton(
+                    text="REMOVER",
+                    on_release=lambda _: self.confirmar_remocao(_id),
+                ),
+            ],
+        )
+        self.dialog.open()
+
+    def confirmar_remocao(self, _id: int) -> None:
+        self.banco.remover_atendimento(_id)
+        self.carregar()
+        self.dialog.dismiss()
+
+    def on_row_press(self, instance_table: MDDataTable, instance_row: Any) -> None:
+        selected_row_index = instance_row.index // len(instance_table.column_data)
+        self.selected_row = instance_table.row_data[selected_row_index]
+
+
+class ContentAddAtendimento(MDBoxLayout):
+    def __init__(
         self,
-        cliente: str,
-        servico: str,
-        data: date,
-        duracao: int,
+        clientes: list[tuple[str, str]],
+        servicos: list[tuple[str, str]],
+        **kwargs: Any,
     ) -> None:
-        clientes = self.banco.obter_clientes()
-        cliente_id, cliente_nome = self._selecionar_item(
-            "Selecionar Cliente",
-            "Escolha um cliente:",
-            clientes,
-            item_selecionado=cliente,
-        )
-        if not cliente_id or not cliente_nome:
-            return
+        super().__init__(**kwargs)
+        self.clientes = clientes
+        self.servicos = servicos
 
-        servicos = self.banco.obter_servicos()
-        servico_id, servico_nome = self._selecionar_item(
-            "Selecionar Serviço",
-            "Escolha um serviço:",
-            servicos,
-            item_selecionado=servico,
-        )
-        if not servico_id or not servico_nome:
-            return
-
-        data_dialog = DataDialog(self)
-        data_dialog.date_edit.setDate(
-            QDate(data.year, data.month, data.day),
-        )
-        if data_dialog.exec() == QDialog.DialogCode.Accepted:
-            data = data_dialog.get_date()
-        else:
-            return
-
-        duracao_str, ok = QInputDialog.getText(
-            self,
-            "Editar Atendimento",
-            "Duração (minutos):",
-            text=str(duracao),
-        )
-        if not ok or not duracao_str:
-            return
-
-        resumo = self._resumo(
-            cliente_nome,
-            servico_nome,
-            data.strftime("%d/%m/%Y"),
-            duracao_str,
-        )
-        reply = QMessageBox.question(
-            self,
-            "Confirmar Edição",
-            resumo,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
+        # Configurar o menu dropdown de clientes
+        menu_items_clientes = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{cliente[1]}",
+                "on_release": lambda x=f"{cliente[1]}": self.set_cliente_item(x),
+            }
+            for cliente in self.clientes
+        ]
+        self.cliente_dropdown = MDDropdownMenu(
+            caller=self.ids.cliente,
+            items=menu_items_clientes,
+            width_mult=4,
         )
 
-        if reply == QMessageBox.StandardButton.Yes:
-            self.banco.editar_atendimento(
-                self._obter_id(),
-                cliente_id,
-                servico_id,
-                data,
-                int(duracao_str),
-            )
-            self.carregar()
-
-    def remover(self) -> None:
-        linha = self.tabela.currentRow()
-        if not self._validar_linha(linha):
-            return
-
-        resumo = self._resumo(
-            cliente=self.tabela.item(linha, 1).text(),
-            servico=self.tabela.item(linha, 2).text(),
-            data_str=self.tabela.item(linha, 3).text(),
-            duracao=self.tabela.item(linha, 4).text(),
+        # Configurar o menu dropdown de serviços
+        menu_items_servicos = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{servico[1]}",
+                "on_release": lambda x=f"{servico[1]}": self.set_servico_item(x),
+            }
+            for servico in self.servicos
+        ]
+        self.servico_dropdown = MDDropdownMenu(
+            caller=self.ids.servico,
+            items=menu_items_servicos,
+            width_mult=4,
         )
 
-        reply = QMessageBox.question(
-            self,
-            "Confirmar Remoção",
-            f"Deseja realmente remover o seguinte atendimento?\n\n{resumo}",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
-        )
+    def set_cliente_item(self, text_item: str) -> None:
+        self.ids.cliente.text = text_item
+        self.cliente_dropdown.dismiss()
 
-        if reply == QMessageBox.StandardButton.Yes:
-            atendimento_id = self._obter_id()
-            self.banco.remover_atendimento(atendimento_id)
-            self.carregar()
+    def set_servico_item(self, text_item: str) -> None:
+        self.ids.servico.text = text_item
+        self.servico_dropdown.dismiss()
 
-    @staticmethod
-    def _resumo(
-        cliente: str,
-        servico: str,
-        data_str: str,
-        duracao: str,
-    ) -> str:
-        return (
-            f"Cliente: {cliente}\n"
-            f"Serviço: {servico}\n"
-            f"Data: {data_str}\n"
-            f"Duração: {duracao} minutos"
-        )
 
-    def _selecionar_item(
+class ContentEditAtendimento(MDBoxLayout):
+    def __init__(
         self,
-        titulo: str,
-        label: str,
-        dados: list[tuple[Any, ...]],
-        item_selecionado: str | None = None,
-    ) -> tuple[int | None, str | None]:
-        nomes = [item[1] for item in dados]
-        indice = nomes.index(item_selecionado) if item_selecionado in nomes else -1
+        clientes: list[tuple[str, str]],
+        servicos: list[tuple[str, str]],
+        data: str,
+        duracao: str,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        self.clientes = clientes
+        self.servicos = servicos
 
-        indice_atual = indice if indice != -1 else 0
-
-        elemento, ok = QInputDialog.getItem(
-            self,
-            titulo,
-            label,
-            nomes,
-            current=indice_atual,
-            editable=False,
-        )
-        if not ok or not elemento:
-            return None, None
-
-        id_selecionado = next((item[0] for item in dados if item[1] == elemento), None)
-        return id_selecionado, elemento
-
-    def _obter_data(self) -> date | None:
-        data_dialog = DataDialog(self)
-        if data_dialog.exec() == QDialog.DialogCode.Accepted:
-            return data_dialog.get_date()
-        return None
-
-
-class DataDialog(QDialog):
-    def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
-        self.setWindowTitle("Selecionar Data")
-        self.date_edit = QDateEdit()
-        self.date_edit.setCalendarPopup(True)
-        self.date_edit.setDate(QDate.currentDate())
-
-        buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel,
-            parent=self,
+        menu_items_clientes = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{cliente[1]}",
+                "on_release": lambda x=f"{cliente[1]}": self.set_cliente_item(x),
+            }
+            for cliente in self.clientes
+        ]
+        self.cliente_dropdown = MDDropdownMenu(
+            caller=self.ids.cliente,
+            items=menu_items_clientes,
+            width_mult=4,
         )
 
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
+        menu_items_servicos = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": f"{servico[1]}",
+                "on_release": lambda x=f"{servico[1]}": self.set_servico_item(x),
+            }
+            for servico in self.servicos
+        ]
+        self.servico_dropdown = MDDropdownMenu(
+            caller=self.ids.servico,
+            items=menu_items_servicos,
+            width_mult=4,
+        )
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.date_edit)
-        layout.addWidget(buttons)
+    def set_cliente_item(self, text_item: str) -> None:
+        self.ids.cliente.text = text_item
+        self.cliente_dropdown.dismiss()
 
-        self.setLayout(layout)
-
-    def get_date(self) -> date:
-        q_date = self.date_edit.date()
-        return date(q_date.year(), q_date.month(), q_date.day())
+    def set_servico_item(self, text_item: str) -> None:
+        self.ids.servico.text = text_item
+        self.servico_dropdown.dismiss()
