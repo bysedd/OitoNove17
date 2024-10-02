@@ -20,7 +20,7 @@ Builder.load_string("""
     orientation: "vertical"
     spacing: dp(20)
     size_hint_y: None
-    height: self.minimum_height + dp(50)
+    height: self.minimum_height
 
     MDLabel:
         text: "Cliente"
@@ -60,7 +60,7 @@ Builder.load_string("""
     orientation: "vertical"
     spacing: dp(20)
     size_hint_y: None
-    height: self.minimum_height + dp(50)
+    height: self.minimum_height
 
     MDLabel:
         text: "Cliente"
@@ -117,9 +117,9 @@ class TelaAtendimentos(MDScreen):
         ]
 
         self.data_tables = MDDataTable(
-            size_hint=(1, 0.9),
-            use_pagination=False,
-            check=False,
+            size_hint=(1, 1),
+            use_pagination=True,
+            check=True,
             column_data=self.column_data,
             row_data=[],
         )
